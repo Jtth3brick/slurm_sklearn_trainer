@@ -3,7 +3,7 @@
 #SBATCH --account=ac_wolflab
 #SBATCH --partition=savio3
 #SBATCH --time=72:00:00
-#SBATCH --output=logs/train_manager_%j.out
+#SBATCH --output=logs/manager_%j.out
 
 # Create directories if they don't exist
 mkdir -p $(pwd)/data
@@ -24,4 +24,5 @@ sleep 10
 python setup_args.py
 
 # keep Redis alive
+echo "Setup complete. Keeping redis alive"
 sleep 71h

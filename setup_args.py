@@ -110,7 +110,7 @@ def get_split_config(
     X_train, y_train = get_data(train_cohorts)
     logging.info(f"Got X_train.shape={X_train.shape} for id {split_id}")
 
-    X_val, y_val = get_data(validate_cohorts)
+    X_val, y_val = get_data(validate_cohorts, schema=[col for col in X_train.columns])
     logging.info(f"Got X_val.shape={X_val.shape} for id {split_id}")
 
     if num_cv_splits:

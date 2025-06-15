@@ -1,9 +1,8 @@
 import copy
 import hashlib
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Any, List, Optional, Tuple
 
-import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
 
@@ -23,7 +22,7 @@ class SplitConfig:
         y_val (Optional[pd.Series]): Validation labels, if validation is enabled.
         X_cv (pd.DataFrame): CV feature, if validation is enabled. Assumed to have same columns as X_train.
         X_cv (pd.Series): CV labels.
-        cv_indices (List[np.ndarray]): Contains the splits for cross validation.
+        cv_indices (Optional[List[Tuple[List[Any], List[Any]]]]): Contains the splits for cross validation.
             May contain indices from train and validation
             None if cv is False.
     """
@@ -35,7 +34,7 @@ class SplitConfig:
     y_val: Optional[pd.Series]
     X_cv: Optional[pd.DataFrame]
     y_cv: Optional[pd.Series]
-    cv_indices: Optional[List[np.ndarray]]
+    cv_indices: Optional[List[Tuple[List[Any], List[Any]]]]
 
 
 @dataclass
