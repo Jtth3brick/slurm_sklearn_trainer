@@ -1,0 +1,259 @@
+seed: 123
+
+num_cv_splits: 5
+
+splits:
+  1:
+    train: ['USA_hmbp', 'USA_qiita', 'USA_umass']
+    validate: ['USA_prism']
+
+  2:
+    train: ['USA_prism', 'USA_qiita', 'USA_umass']
+    validate: ['USA_hmbp']
+
+pipe_configs:
+  lasso:
+    steps: 
+    - Preselection:
+      - function: "custom_transformers.ThresholdApplier"
+        args: {}
+        hyperparams:
+          threshold: [0, 1, 10, 50, 200, 500, 1000]
+          threshold_type: ["hard", "soft"]
+      - function: "custom_transformers.RandomForestFeatureSelector"
+        args: {}
+        hyperparams:
+          n_estimators: [100, 500, 1000]
+          threshold: [0.00001, 0.0001, 0.001, 0.01, 0.1]
+      - function: "custom_transformers.LassoFeatureSelector"
+        args: {}
+        hyperparams:
+          alpha: [1, 4, 64]
+          threshold: [0.00001, 0.001, 0.1]
+    - Normalization:
+      - function: "sklearn.preprocessing.StandardScaler"
+        args: {}
+        hyperparams: {}
+      - function: "sklearn.preprocessing.MinMaxScaler"
+        args: {}
+        hyperparams: {}
+    - Model:
+      - function: "sklearn.linear_model.LogisticRegression"
+        args:
+          penalty: "l1"
+          solver: "saga"
+          max_iter: 100000
+          fit_intercept: true
+        hyperparams:
+          C: [3.0517578125e-05, 6.103515625e-05, 0.0001220703125, 0.000244140625, 0.00048828125, 0.0009765625, 0.001953125, 0.00390625, 0.0078125, 0.015625, 0.03125, 0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384]
+
+  ridge:
+    steps: 
+    - Preselection:
+      - function: "custom_transformers.ThresholdApplier"
+        args: {}
+        hyperparams:
+          threshold: [0, 1, 10, 50, 200, 500, 1000]
+          threshold_type: ["hard", "soft"]
+      - function: "custom_transformers.RandomForestFeatureSelector"
+        args: {}
+        hyperparams:
+          n_estimators: [100, 500, 1000]
+          threshold: [0.00001, 0.0001, 0.001, 0.01, 0.1]
+      - function: "custom_transformers.LassoFeatureSelector"
+        args: {}
+        hyperparams:
+          alpha: [1, 4, 64]
+          threshold: [0.00001, 0.001, 0.1]
+    - Normalization:
+      - function: "sklearn.preprocessing.StandardScaler"
+        args: {}
+        hyperparams: {}
+      - function: "sklearn.preprocessing.MinMaxScaler"
+        args: {}
+        hyperparams: {}
+    - Model:
+      - function: "sklearn.linear_model.LogisticRegression"
+        args:
+          penalty: "l2"
+          solver: "saga"
+          max_iter: 100000
+          fit_intercept: true
+        hyperparams:
+          C: [3.0517578125e-05, 6.103515625e-05, 0.0001220703125, 0.000244140625, 0.00048828125, 0.0009765625, 0.001953125, 0.00390625, 0.0078125, 0.015625, 0.03125, 0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384]
+
+  enet:
+    steps: 
+      - Preselection:
+        - function: "custom_transformers.ThresholdApplier"
+          args: {}
+          hyperparams:
+            threshold: [0, 1, 10, 50, 200, 500, 1000]
+            threshold_type: ["hard", "soft"]
+        - function: "custom_transformers.RandomForestFeatureSelector"
+          args: {}
+          hyperparams:
+            n_estimators: [100, 500, 1000]
+            threshold: [0.00001, 0.0001, 0.001, 0.01, 0.1]
+        - function: "custom_transformers.LassoFeatureSelector"
+          args: {}
+          hyperparams:
+            alpha: [1, 4, 64]
+            threshold: [0.00001, 0.001, 0.1]
+      - Normalization:
+        - function: "sklearn.preprocessing.StandardScaler"
+          args: {}
+          hyperparams: {}
+        - function: "sklearn.preprocessing.MinMaxScaler"
+          args: {}
+          hyperparams: {}
+      - Model:
+        - function: "sklearn.linear_model.LogisticRegression"
+          args:
+            max_iter: 100000
+            fit_intercept: true
+            penalty: 'elasticnet'
+            solver: "saga"
+          hyperparams:
+            C: [0.000244140625, 0.0009765625, 0.00390625, 0.015625, 0.0625, 0.25, 1, 4, 16, 64, 256, 1024]
+            l1_ratio: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+
+  svc:
+    steps: 
+    - Preselection:
+      - function: "custom_transformers.ThresholdApplier"
+        args: {}
+        hyperparams:
+          threshold: [0, 1, 10, 50, 200, 500, 1000]
+          threshold_type: ["hard", "soft"]
+      - function: "custom_transformers.RandomForestFeatureSelector"
+        args: {}
+        hyperparams:
+          n_estimators: [100, 500, 1000]
+          threshold: [0.00001, 0.0001, 0.001, 0.01, 0.1]
+      - function: "custom_transformers.LassoFeatureSelector"
+        args: {}
+        hyperparams:
+          alpha: [1, 4, 64]
+          threshold: [0.00001, 0.001, 0.1]
+    - Normalization:
+      - function: "sklearn.preprocessing.StandardScaler"
+        args: {}
+        hyperparams: {}
+      - function: "sklearn.preprocessing.MinMaxScaler"
+        args: {}
+        hyperparams: {}
+    - Model:
+      - function: "sklearn.svm.SVC"
+        args:
+          probability: true
+        hyperparams:
+          C: [3.0517578125e-05, 6.103515625e-05, 0.0001220703125, 0.000244140625, 0.00048828125, 0.0009765625, 0.001953125, 0.00390625, 0.0078125, 0.015625, 0.03125, 0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384]
+          shrinking: [true, false]
+
+  xgb:
+    steps: 
+    - Preselection:
+      - function: "custom_transformers.ThresholdApplier"
+        args: {}
+        hyperparams:
+          threshold: [0, 1, 10, 50, 200, 500, 1000]
+          threshold_type: ["hard", "soft"]
+      - function: "custom_transformers.RandomForestFeatureSelector"
+        args: {}
+        hyperparams:
+          n_estimators: [100, 500, 1000]
+          threshold: [0.00001, 0.0001, 0.001, 0.01, 0.1]
+      - function: "custom_transformers.LassoFeatureSelector"
+        args: {}
+        hyperparams:
+          alpha: [1, 4, 64]
+          threshold: [0.00001, 0.001, 0.1]
+    - Model:
+      - function: "xgboost.XGBClassifier"
+        args:
+          n_jobs: 1
+        hyperparams:
+          n_estimators: [200, 500, 1000, 2000, 10000]
+          max_depth: [null, 3, 6, 9, 12, 20, 50]
+          reg_lambda: [1, 1.5, 2, 3, 4.5]
+
+  rf:
+    steps: 
+    - Preselection:
+      - function: "custom_transformers.ThresholdApplier"
+        args: {}
+        hyperparams:
+          threshold: [0, 1, 10, 50, 200, 500, 1000]
+          threshold_type: ["hard", "soft"]
+      - function: "custom_transformers.RandomForestFeatureSelector"
+        args: {}
+        hyperparams:
+          n_estimators: [100, 500, 1000]
+          threshold: [0.00001, 0.0001, 0.001, 0.01, 0.1]
+      - function: "custom_transformers.LassoFeatureSelector"
+        args: {}
+        hyperparams:
+          alpha: [1, 4, 64]
+          threshold: [0.00001, 0.001, 0.1]
+      - function: "sklearn.decomposition.TruncatedSVD"
+        args:
+          algorithm: "randomized"
+        hyperparams:
+          n_components: [5, 10, 100, 500]
+    - Model:
+      - function: "sklearn.ensemble.RandomForestClassifier"
+        args:
+          n_jobs: 1
+          criterion: "gini"
+          max_features: "sqrt"
+        hyperparams:
+          n_estimators: [200, 500, 1000, 2000, 10000]
+          max_depth: [null, 3, 6, 9, 12, 20, 50]
+
+  nn:
+    steps: 
+    - Preselection:
+      - function: "custom_transformers.ThresholdApplier"
+        args: {}
+        hyperparams:
+          threshold: [0, 1, 10, 50, 200, 500, 1000]
+          threshold_type: ["hard", "soft"]
+      - function: "custom_transformers.RandomForestFeatureSelector"
+        args: {}
+        hyperparams:
+          n_estimators: [100, 500, 1000]
+          threshold: [0.00001, 0.0001, 0.001, 0.01, 0.1]
+      - function: "custom_transformers.LassoFeatureSelector"
+        args: {}
+        hyperparams:
+          alpha: [1, 4, 64]
+          threshold: [0.00001, 0.001, 0.1]
+      - function: "sklearn.decomposition.TruncatedSVD"
+        args:
+          algorithm: "randomized"
+        hyperparams:
+          n_components: [5, 10, 100, 500]
+    - Normalization:
+      - function: "sklearn.preprocessing.StandardScaler"
+        args: {}
+        hyperparams: {}
+      - function: "sklearn.preprocessing.MinMaxScaler"
+        args: {}
+        hyperparams: {}
+    - Model:
+      - function: "sklearn.neural_network.MLPClassifier"
+        args:
+          max_iter: 100000
+          warm_start: true
+          solver: "adam"
+        hyperparams: 
+          hidden_layer_sizes: [
+            [50], [100], [200],
+            [50, 50], [100, 100], [200, 100],
+            [50, 50, 50], [100, 100, 100], [200, 100, 50],
+            [50, 50, 50, 50], [100, 100, 100, 100], [200, 125, 75, 10],
+          ]
+          activation: ["tanh", "relu"]
+          alpha: [0.0001, 0.001, 0.01, 0.5]
+          learning_rate: ["constant", "invscaling", "adaptive"]
