@@ -26,3 +26,7 @@ python setup_args.py
 # keep Redis alive
 echo "Setup complete. Keeping redis alive"
 sleep 71h
+
+# Make one final save with a different name
+apptainer exec docker://redis:alpine redis-cli -h localhost CONFIG SET dbfilename final_save.rdb
+apptainer exec docker://redis:alpine redis-cli -h localhost SAVE

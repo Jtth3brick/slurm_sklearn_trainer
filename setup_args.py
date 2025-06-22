@@ -102,23 +102,42 @@ def get_split_config(
     split_id: str,
     train_cohorts: List[str],
     validate_cohorts: List[str],
-    num_cv_splits: int,
     seed: Optional[int] = None,
+    train_eval=True,
+    num_cv_splits: int = 5,
 ) -> SplitConfig:
+    """
+    Prepare the input data for the models
+
+    split_id: unique identifier
+    train_cohorts: used for get_data funtion
+    validate_cohorts: used for get_data funtion
+        CV uses the union of train_cohorts and validate_cohorts
+    seed: random state for StratifiedKFold
+    train: Whether to inclue train/val data
+    num_cv_splits: k in StratifiedKFold. 0 indicates no cv.
+    """
     logging.info(f"Setting up split {split_id}")
 
-    X_train, y_train = get_data(train_cohorts)
-    logging.info(f"Got X_train.shape={X_train.shape} for id {split_id}")
+    if train_eval:
+        X_train, y_train = get_data(train_cohorts)
+        logging.info(f"Got X_train.shape={X_train.shape} for id {split_id}")
 
-    X_val, y_val = get_data(validate_cohorts, schema=[col for col in X_train.columns])
-    logging.info(f"Got X_val.shape={X_val.shape} for id {split_id}")
+        X_val, y_val = get_data(
+            validate_cohorts, schema=[col for col in X_train.columns]
+        )
+        logging.info(f"Got X_val.shape={X_val.shape} for id {split_id}")
+    else:
+        logging.info("Skipping train/eval data setup")
+        X_train, y_train = None, None
+        X_val, y_val = None, None
 
     if num_cv_splits:
         skf = StratifiedKFold(n_splits=num_cv_splits, shuffle=True, random_state=seed)
         # Convert DataFrame indices to run indices before storing
         # Use both train and validate data for cv
-        X_cv = pd.concat([X_train, X_val])
-        y_cv = pd.concat([y_train, y_val])
+        cv_cohorts = list(set(train_cohorts) | set(validate_cohorts))
+        X_cv, y_cv = get_data(cv_cohorts)
         run_indices = y_cv.index
         cv_indices = []
         for train_idx, test_idx in skf.split(X_cv, y_cv):
@@ -126,8 +145,12 @@ def get_split_config(
             train_runs = [run_indices[i] for i in train_idx]
             test_runs = [run_indices[i] for i in test_idx]
             cv_indices.append((train_runs, test_runs))
+        logging.info(
+            f"Added cv args of {X_cv.shape=} to split config. "
+            f"Included cohorts {cv_cohorts=}."
+        )
     else:
-        # Indicate CV should not be done
+        logging.info("Skipping cv data setup")
         X_cv = None
         y_cv = None
         cv_indices = None
@@ -147,8 +170,6 @@ def get_split_config(
 def get_model_configs(steps: Dict) -> List[Pipeline]:
     """
     Creates a list pipelines from the yaml config
-
-    We do this unique style so we can cache intermediate results across models
     """
 
     def import_class(module_path: str):
@@ -213,8 +234,9 @@ def main():
             split_id=str(split_id),
             train_cohorts=config["splits"][split_id]["train"],
             validate_cohorts=config["splits"][split_id]["validate"],
-            num_cv_splits=config["num_cv_splits"],
             seed=config["seed"],
+            train_eval=config["train_eval"],
+            num_cv_splits=config["num_cv_splits"],
         )
 
         # Write as pickle for workers workers

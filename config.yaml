@@ -1,7 +1,9 @@
-seed: 123
+# These are used at manager setup time. Workers never look at this file
+seed: 123 # Random state consistency. Not applied to pipe_configs
+num_cv_splits: 5 # 0 to skip cv (train_eval only if enabled)
+train_eval: False # False means skip train/test (cv only if enabled)
 
-num_cv_splits: 5
-
+# CV uses union of train/validate for making splits
 splits:
   1:
     train: ['USA_hmbp', 'USA_qiita', 'USA_umass']

@@ -16,20 +16,21 @@ class SplitConfig:
 
     Attributes:
         split_id (str): Identifier for the data split.
-        X_train (pd.DataFrame): Training features.
-        y_train (pd.Series): Training labels.
-        X_val (Optional[pd.DataFrame]): Validation features, if validation is enabled. Assumed to have same columns as X_train.
-        y_val (Optional[pd.Series]): Validation labels, if validation is enabled.
-        X_cv (pd.DataFrame): CV feature, if validation is enabled. Assumed to have same columns as X_train.
-        X_cv (pd.Series): CV labels.
+        X_train: Training features.
+            None indicates skip (and look for CV)
+        y_train: Training labels.
+        X_val: Validation features, if validation is enabled. Assumed to have same columns as X_train.
+        y_val: Validation labels, if validation is enabled.
+        X_cv: CV feature, if validation is enabled. Assumed to have same columns as X_train.
+        y_cv: CV labels.
         cv_indices (Optional[List[Tuple[List[Any], List[Any]]]]): Contains the splits for cross validation.
             May contain indices from train and validation
             None if cv is False.
     """
 
     split_id: str
-    X_train: pd.DataFrame
-    y_train: pd.Series
+    X_train: Optional[pd.DataFrame]
+    y_train: Optional[pd.Series]
     X_val: Optional[pd.DataFrame]
     y_val: Optional[pd.Series]
     X_cv: Optional[pd.DataFrame]

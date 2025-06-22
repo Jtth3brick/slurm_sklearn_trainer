@@ -88,7 +88,7 @@ def fit(model_config: ModelConfig, split_config: SplitConfig) -> ModelConfig:
     """Processes ModelConfig including CV scores if requested. Scoring metric is AUC"""
 
     assert model_config.split_id == split_config.split_id, (
-        "Data does not match. Exiting"
+        "Data does not match. Exiting..."
     )
 
     # Get cv scores if requested
@@ -115,13 +115,21 @@ def fit(model_config: ModelConfig, split_config: SplitConfig) -> ModelConfig:
             # Add cv score to result
             pred_proba = pipe.predict_proba(X_val_fold)[:, 1]
             model_config.cv_scores.append(float(roc_auc_score(y_val_fold, pred_proba)))
+    else:
+        logging.info("Skipping CV fitting")
 
-    # Fit traditional train/validate
-    logging.info("Fitting full model")
-    pipe = model_config.get_empty_pipe()
-    pipe.fit(split_config.X_train.copy(), split_config.y_train.copy())
-    pred_proba = pipe.predict_proba(split_config.X_val)[:, 1]
-    model_config.validate_score = float(roc_auc_score(split_config.y_val, pred_proba))
+    # Fit traditional train/validate if requested
+    if split_config.X_train is not None:
+        assert split_config.y_train is not None
+        logging.info("Fitting full model")
+        pipe = model_config.get_empty_pipe()
+        pipe.fit(split_config.X_train.copy(), split_config.y_train.copy())
+        pred_proba = pipe.predict_proba(split_config.X_val)[:, 1]
+        model_config.validate_score = float(
+            roc_auc_score(split_config.y_val, pred_proba)
+        )
+    else:
+        logging.info("Skipping train/val fitting")
 
     return model_config
 
@@ -161,7 +169,10 @@ def main(worker_id: int):
                 logging.info(f"fitting for {model_config} starting")
                 signal.signal(signal.SIGALRM, fitting_handler)
                 signal.alarm(MAX_FIT_TIME)
-                fit(model_config, split_cache[model_config.split_id])
+                fit(
+                    model_config=model_config,
+                    split_config=split_cache[model_config.split_id],
+                )
                 signal.alarm(0)
                 trained_model_count += 1
                 logging.info(f"Successfully trained {trained_model_count} models")
