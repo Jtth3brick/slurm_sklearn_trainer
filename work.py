@@ -84,7 +84,7 @@ def ensure_split(
                 break
 
 
-def fit(model_config: ModelConfig, split_config: SplitConfig) -> ModelConfig:
+def fit(model_config: ModelConfig, split_config: SplitConfig):
     """Processes ModelConfig including CV scores if requested. Scoring metric is AUC"""
 
     assert model_config.split_id == split_config.split_id, (
@@ -130,8 +130,6 @@ def fit(model_config: ModelConfig, split_config: SplitConfig) -> ModelConfig:
         )
     else:
         logging.info("Skipping train/val fitting")
-
-    return model_config
 
 
 def main(worker_id: int):
@@ -187,7 +185,7 @@ def main(worker_id: int):
             logging.debug("Successfully saved model.")
         except Exception as e:
             uncaught_failures += 1
-            logging.error(
+            logging.exception(
                 f"model loop failed. "
                 f"{MAX_UNCAUGHT_FAILURES - uncaught_failures} remaining: {e}"
             )

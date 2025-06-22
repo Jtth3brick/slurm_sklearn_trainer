@@ -1,5 +1,12 @@
 *.sqlite3
 *.pkl
 *.out
+
 **/__pycache__/**
+
 redis_connection.txt
+dump.rdb
+
+split_data/**
+sklearn_model_cache_/**
+logs/**

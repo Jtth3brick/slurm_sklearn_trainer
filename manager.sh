@@ -21,7 +21,7 @@ echo "$(hostname):6379" >redis_connection.txt
 sleep 10
 
 # Set up data and worker args queue
-python setup_args.py
+python -u setup_args.py
 
 # keep Redis alive
 echo "Setup complete. Keeping redis alive"

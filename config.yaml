@@ -9,14 +9,11 @@ model_caching:
   dir: sklearn_model_cache_
 
 # CV uses union of train/validate for making splits
+# Manager will create a full search for every split listed
 splits:
   1:
-    train: ['USA_hmbp', 'USA_qiita', 'USA_umass']
-    validate: ['USA_prism']
-
-  2:
-    train: ['USA_prism', 'USA_qiita', 'USA_umass']
-    validate: ['USA_hmbp']
+    train: ['USA_elinav', 'USA_hmbp', 'USA_prism']
+    validate: []
 
 pipe_configs:
   lasso:
