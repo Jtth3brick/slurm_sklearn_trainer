@@ -2,6 +2,11 @@
 seed: 123 # Random state consistency. Not applied to pipe_configs
 num_cv_splits: 5 # 0 to skip cv (train_eval only if enabled)
 train_eval: False # False means skip train/test (cv only if enabled)
+model_caching: 
+  # Note this may cause issues with tracing important features
+  # See https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html
+  enabled: True
+  dir: sklearn_model_cache_
 
 # CV uses union of train/validate for making splits
 splits:

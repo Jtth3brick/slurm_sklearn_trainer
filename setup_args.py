@@ -167,7 +167,7 @@ def get_split_config(
     )
 
 
-def get_model_configs(steps: Dict) -> List[Pipeline]:
+def get_model_configs(steps: Dict, cache_dir: Optional[str]) -> List[Pipeline]:
     """
     Creates a list pipelines from the yaml config
     """
@@ -194,7 +194,7 @@ def get_model_configs(steps: Dict) -> List[Pipeline]:
             for hp_name, hp_values in step_config.get("hyperparams", {}).items():
                 hyperparams[f"{step_name}__{hp_name}"] = hp_values
 
-        pipeline = Pipeline(model_steps)
+        pipeline = Pipeline(model_steps, memory=cache_dir)
         pipeline_search.append((pipeline, hyperparams))
 
     # Expand out each param grid
@@ -224,6 +224,12 @@ def main():
     with open("config.yaml", "r") as f:
         config = yaml.safe_load(f)
 
+    # Check if we're caching and setup dir
+    cache_dir = None
+    if config["model_caching"]["enabled"]:
+        cache_dir = config["model_caching"]["dir"]
+        os.makedirs(cache_dir, exist_ok=True)
+
     # Set up split data and pipes with caching
     # We do it on in cohort chunks to minimize worker io on split_data reads
     logging.info("Setting up splits and data")
@@ -239,17 +245,20 @@ def main():
             num_cv_splits=config["num_cv_splits"],
         )
 
-        # Write as pickle for workers workers
+        # Write as pickle for workers
         savepath = f"{SPLIT_DIR}/split_{split_id}.pkl"
         logging.info(f"Writing split_config to {savepath}")
         with open(savepath, "wb") as f:
             pickle.dump(split_config, f)
+            os.makedirs(SPLIT_DIR, exist_ok=True)
 
         # Make model_configs a list of lists for interlacing so training is fair
         logging.info(f"Setting up pipeline config for {split_id}")
         nested_model_configs = []
         for pipe_name, pipe_config in config["pipe_configs"].items():
-            pipelines = get_model_configs(steps=pipe_config["steps"])
+            pipelines = get_model_configs(
+                steps=pipe_config["steps"], cache_dir=cache_dir
+            )
             nested_model_configs.append(
                 [
                     ModelConfig(
