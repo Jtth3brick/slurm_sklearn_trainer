@@ -21,16 +21,34 @@ def fitting_handler(signum, frame):
     raise TimeoutError("Model failed to train in time.")
 
 
-def get_arg(r, num_attempts=3) -> Optional[ModelConfig]:
+def get_arg(r, num_attempts=3, skip_completed=False) -> Optional[ModelConfig]:
+    """
+    Pop a ModelConfig from Redis queue, optionally skipping already-trained models.
+    Retries on Redis failures. Returns None if queue is empty or all retries fail.
+
+    Args:
+        skip_completed: If True, skip configs that already have results in Redis
+    """
+    def pop_item():
+        item = r.brpop("model_queue", timeout=1)
+        if not item:
+            logging.info("No items in queue")
+            return None
+        return pickle.loads(item[1])
+
+    # Retry loop for Redis connection failures
     for attempt in range(num_attempts):
         try:
-            item = r.brpop("model_queue", timeout=1)
-            if not item:
-                logging.info("No items in queue")
-                return None
+            # Keep popping until we find an untrained model or queue is empty
+            while model_config := pop_item():
+                # Return immediately if we don't skip completed, or if no result exists yet
+                if not skip_completed or not r.exists(f"result:{model_config.config_hash}"):
+                    return model_config
 
-            model_config: ModelConfig = pickle.loads(item[1])
-            return model_config
+                logging.info("Skipping model from queue because result is already in redis.")
+
+            # Queue is empty
+            return None
 
         except Exception as e:
             logging.warning(f"Attempt {attempt + 1}/{num_attempts} failed: {e}")
@@ -40,7 +58,6 @@ def get_arg(r, num_attempts=3) -> Optional[ModelConfig]:
                 time.sleep(sleep_time)
             else:
                 logging.error(f"All {num_attempts} attempts failed")
-
     return None
 
 
@@ -154,7 +171,7 @@ def main(worker_id: int):
     uncaught_failures = 0
     while True:
         try:
-            model_config = get_arg(r, num_attempts=3)
+            model_config = get_arg(r, num_attempts=3, skip_completed=True)
             if model_config is None:
                 logging.info("Could not get arg. Queue is likely empty.")
                 break

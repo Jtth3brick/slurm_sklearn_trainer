@@ -124,6 +124,10 @@ class RandomForestFeatureSelector(BaseEstimator, TransformerMixin):
         self.model.fit(X, y)
         self.feature_importances_ = self.model.feature_importances_
         self.support_mask = self.feature_importances_ >= self.threshold
+
+        if not np.any(self.support_mask):
+            self.support_mask = np.ones(X.shape[1], dtype=bool)
+
         return self
 
     def transform(self, X):
